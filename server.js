@@ -6,6 +6,9 @@ var upload = multer({ dest: 'uploads/' });
 
 let app = express();
 
+app.set('view engine', 'ejs');
+app.set('views', './views');
+
 // create application/json parser
 var jsonParser = bodyParser.json()
 // create application/x-www-form-urlencoded parser
@@ -36,7 +39,7 @@ var upload = multer({ storage: storage })
 // POST /api/users gets JSON bodies
 app.post('/upload', upload.single('logo'), function (req, res) {
     console.dir(req.file),
-    res.send({ 'ret_code': 0 });
+        res.send({ 'ret_code': 0 });
 })
 
 // POST /login gets urlencoded bodies
@@ -45,11 +48,17 @@ app.post('/', urlencodedParser, function (req, res) {
     res.send(req.body);
 })
 
-app.get('/form', function (req, res) {
-    // let form = fs.readFileSync('./form.html', { encoding: "utf-8" });
-    // res.send(form);
-    res.sendfile(__dirname + '/form.html');
+app.get('/form/:name', function (req, res) {
+    // 自定义要传入 HTML 的变量
+    let data = { "id": "001", "name": "lemon" }
+    // 把 person 传入 form.ejx 页面
+    res.render('form', { data: data })
 })
+// app.get('/form', function (req, res) {
+//     res.sendfile(__dirname + '/form.html');
+//     // 等同于：
+//     // res.sendfile('./form.html');    
+// })
 
 app.listen(3000)
 console.log('listening to port 3000');
