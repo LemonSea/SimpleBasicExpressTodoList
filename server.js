@@ -1,29 +1,54 @@
 let express = require('express');
-var bodyParser = require('body-parser');
+let bodyParser = require('body-parser');
+let fs = require('fs');
+var multer = require('multer');
+var upload = multer({ dest: 'uploads/' });
 
 let app = express();
 
-// parse application/json
-app.use(bodyParser.json())
+// create application/json parser
+var jsonParser = bodyParser.json()
+// create application/x-www-form-urlencoded parser
+var urlencodedParser = bodyParser.urlencoded({ extended: false })
 
-app.get('/profile/:id/:name', function (req, res) {
-    let responseData = ( "you requset is " + req.params.name );
-    res.status(200).send(responseData);
-});
+var createFolder = function (folder) {
+    try {
+        fs.accessSync(folder);
+    } catch {
+        fs.mkdirSync(folder);
+    }
+}
+var uploadFolder = './upload/';
+createFolder(uploadFolder)
 
-app.get('/', function (req, res) {
-    console.dir(req.query)
-    res.send("home page " + JSON.stringify(req.query));
-});
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadFolder)
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.originalname)
+    }
+})
 
-app.get('/', function (req, res) {
-    console.dir(req.query)
-    res.send("home page " + JSON.stringify(req.query));
-});
+var upload = multer({ storage: storage })
 
-app.post('/', function (req, res) {
+
+// POST /api/users gets JSON bodies
+app.post('/upload', upload.single('logo'), function (req, res) {
+    console.dir(req.file),
+    res.send({ 'ret_code': 0 });
+})
+
+// POST /login gets urlencoded bodies
+app.post('/', urlencodedParser, function (req, res) {
     console.dir(req.body);
     res.send(req.body);
+})
+
+app.get('/form', function (req, res) {
+    // let form = fs.readFileSync('./form.html', { encoding: "utf-8" });
+    // res.send(form);
+    res.sendfile(__dirname + '/form.html');
 })
 
 app.listen(3000)
